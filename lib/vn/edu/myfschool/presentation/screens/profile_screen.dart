@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../controller/auth_provider.dart';
 import 'login_screen.dart';
@@ -8,6 +9,88 @@ class ProfileScreen extends StatefulWidget {
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
+  void _showEditProfileDialog(BuildContext context, String currentName, String currentEmail) {
+    final nameController = TextEditingController(text: currentName);
+    final emailController = TextEditingController(text: currentEmail == "Chưa có Email" ? "" : currentEmail);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(
+                child: Text(
+                  'Cập nhật thông tin',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: 'Họ và tên',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.person_outline),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.email_outlined),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final newName = nameController.text.trim();
+                    final newEmail = emailController.text.trim();
+                    if (newName.isEmpty) return;
+                    
+                    final success = await context.read<AuthProvider>().updateProfile(newName, newEmail);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(success ? 'Cập nhật thành công!' : 'Có lỗi xảy ra, vui lòng thử lại!'),
+                          backgroundColor: success ? Colors.green : Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF8351),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Lưu thay đổi', style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
@@ -53,14 +136,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   // Back button (Góc trên trái)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                                    Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, color: Colors.black87, size: 24),
+                          onPressed: () {
+                            _showEditProfileDialog(context, fullName, email);
+                          },
+                        ),
+                      ],
                     ),
                   ),
                   
@@ -82,22 +175,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: Column(
                       children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                            color: const Color(0xFFF5F3F0),
-                            image: avatar.isNotEmpty
-                                ? DecorationImage(
-                                    image: NetworkImage(avatar),
-                                    fit: BoxFit.cover,
-                                  )
-                                : const DecorationImage(
-                                    image: AssetImage('assets/images/avatar.jpg'),
-                                    fit: BoxFit.cover,
+                                                GestureDetector(
+                          onTap: () async {
+                            final picker = ImagePicker();
+                            final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                            if (image != null && context.mounted) {
+                              final success = await context.read<AuthProvider>().updateAvatar(image.path);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(success ? 'Cập nhật avatar thành công!' : 'Lỗi cập nhật avatar'),
+                                    backgroundColor: success ? Colors.green : Colors.red,
                                   ),
+                                );
+                              }
+                            }
+                          },
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 3),
+                                  color: const Color(0xFFF5F3F0),
+                                  image: avatar.isNotEmpty
+                                      ? DecorationImage(
+                                          image: NetworkImage(avatar),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : const DecorationImage(
+                                          image: AssetImage('assets/images/avatar.jpg'),
+                                          fit: BoxFit.cover,
+                                        ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.blueAccent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -454,6 +580,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       child: child,
+    );
+  }
+  void _showEditProfileDialog(BuildContext context, String currentName, String currentEmail) {
+    final nameController = TextEditingController(text: currentName);
+    final emailController = TextEditingController(text: currentEmail == "Chưa có Email" ? "" : currentEmail);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(
+                child: Text(
+                  'Cập nhật thông tin',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: 'Họ và tên',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.person_outline),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.email_outlined),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final newName = nameController.text.trim();
+                    final newEmail = emailController.text.trim();
+                    if (newName.isEmpty) return;
+                    
+                    final success = await context.read<AuthProvider>().updateProfile(newName, newEmail);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(success ? 'Cập nhật thành công!' : 'Có lỗi xảy ra, vui lòng thử lại!'),
+                          backgroundColor: success ? Colors.green : Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF8351),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Lưu thay đổi', style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
   }
 }

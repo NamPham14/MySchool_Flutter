@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../domain/auth_response_model.dart';
 import '../service/auth_service.dart';
 
@@ -87,5 +87,61 @@ class AuthProvider extends ChangeNotifier {
     if (!isSuccess) errorMessage = "Đặt lại mật khẩu thất bại.";
     notifyListeners();
     return isSuccess;
+  }  Future<bool> updateProfile(String fullName, String email) async {
+    isLoading = true;
+    notifyListeners();
+    final updatedUser = await _authService.updateProfile(fullName, email);
+    isLoading = false;
+    if (updatedUser != null) {
+      if (currentUser != null) {
+        currentUser = AuthResponseModel(
+          id: currentUser!.id,
+          email: updatedUser.email ?? currentUser!.email,
+          fullName: updatedUser.fullName ?? currentUser!.fullName,
+          phoneNumber: currentUser!.phoneNumber,
+          rollNumber: currentUser!.rollNumber,
+          avatarUrl: currentUser!.avatarUrl,
+          campus: currentUser!.campus,
+          token: currentUser!.token,
+          refreshToken: currentUser!.refreshToken,
+          type: currentUser!.type,
+          roles: currentUser!.roles,
+        );
+      }
+      notifyListeners();
+      return true;
+    }
+    errorMessage = "Cập nhật thất bại";
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> updateAvatar(String filePath) async {
+    isLoading = true;
+    notifyListeners();
+    final avatarUrl = await _authService.uploadAvatar(filePath);
+    isLoading = false;
+    if (avatarUrl != null) {
+      if (currentUser != null) {
+        currentUser = AuthResponseModel(
+          id: currentUser!.id,
+          email: currentUser!.email,
+          fullName: currentUser!.fullName,
+          phoneNumber: currentUser!.phoneNumber,
+          rollNumber: currentUser!.rollNumber,
+          avatarUrl: avatarUrl,
+          campus: currentUser!.campus,
+          token: currentUser!.token,
+          refreshToken: currentUser!.refreshToken,
+          type: currentUser!.type,
+          roles: currentUser!.roles,
+        );
+      }
+      notifyListeners();
+      return true;
+    }
+    errorMessage = "Cập nhật ảnh thất bại";
+    notifyListeners();
+    return false;
   }
 }

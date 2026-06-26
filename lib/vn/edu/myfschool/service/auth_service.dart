@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../domain/auth_response_model.dart';
 import 'api_config.dart';
@@ -91,5 +91,53 @@ class AuthService {
       print('Reset Password Error: $e');
     }
     return false;
+  }  Future<AuthResponseModel?> updateProfile(String fullName, String email) async {
+    try {
+      final token = await ApiConfig.storage.read(key: 'accessToken');
+      final response = await http.put(
+        Uri.parse('${ApiConfig.baseUrl}/users/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'fullName': fullName,
+          'email': email,
+        }),
+      );
+      if (response.statusCode == 200) {
+        final json = jsonDecode(utf8.decode(response.bodyBytes));
+        if (json['code'] == 1000) {
+          return AuthResponseModel.fromJson(json['data']);
+        }
+      }
+    } catch (e) {
+      print('Update Profile Error: $e');
+    }
+    return null;
+  }
+
+  Future<String?> uploadAvatar(String filePath) async {
+    try {
+      final token = await ApiConfig.storage.read(key: 'accessToken');
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${ApiConfig.baseUrl}/users/profile/avatar'),
+      );
+      request.headers['Authorization'] = 'Bearer $token';
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.bytesToString();
+        var json = jsonDecode(responseData);
+        if (json['code'] == 1000) {
+          return json['data'];
+        }
+      }
+    } catch (e) {
+      print('Upload Avatar Error: $e');
+    }
+    return null;
   }
 }
