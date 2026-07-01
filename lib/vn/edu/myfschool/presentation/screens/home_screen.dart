@@ -13,9 +13,26 @@ import 'group_chat_screen.dart';
 import 'notifications_screen.dart';
 import '../../service/chat_service.dart';
 import '../../domain/chat_model.dart';
+import '../../controller/notification_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Connect WebSocket cho Notifications and fetch initial count
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final notifProvider = Provider.of<NotificationProvider>(context, listen: false);
+      notifProvider.fetchUnreadCount();
+      notifProvider.connectWebSocket(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,12 +110,36 @@ class HomeScreen extends StatelessWidget {
           icon: const Icon(Icons.search, color: Colors.white, size: 28),
           onPressed: () {},
         ),
-        IconButton(
-          icon: const Icon(Icons.notifications, color: Colors.white, size: 28),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+        Consumer<NotificationProvider>(
+          builder: (context, notifProvider, child) {
+            return Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.notifications, color: Colors.white, size: 28),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                    ).then((_) => notifProvider.fetchUnreadCount());
+                  },
+                ),
+                if (notifProvider.unreadCount > 0)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${notifProvider.unreadCount}',
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  )
+              ],
             );
           },
         ),
@@ -360,12 +401,37 @@ class HomeScreen extends StatelessWidget {
                       );
                     }
                   }),
-                  _buildNavItem(Icons.mail, "Thông báo", onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                    );
-                  }),
+                  Consumer<NotificationProvider>(
+                    builder: (context, notifProvider, child) {
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          _buildNavItem(Icons.mail, "Thông báo", onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                            ).then((_) => notifProvider.fetchUnreadCount());
+                          }),
+                          if (notifProvider.unreadCount > 0)
+                            Positioned(
+                              right: 0,
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${notifProvider.unreadCount}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            )
+                        ],
+                      );
+                    },
+                  ),
                   _buildNavItem(Icons.home, "Trang chủ", isActive: true),
                   _buildNavItem(Icons.person_search, "Điểm danh"),
                   _buildNavItem(

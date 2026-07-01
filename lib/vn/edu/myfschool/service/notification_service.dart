@@ -58,7 +58,27 @@ class NotificationService {
       }
     } catch (e) {
       print('Mark As Read Error: $e');
+      return false;
     }
     return false;
+  }
+
+  Future<bool> markAllAsRead() async {
+    try {
+      final headers = await ApiConfig.getHeaders();
+      final response = await http.put(
+        Uri.parse('${ApiConfig.baseUrl}/notifications/read-all'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(utf8.decode(response.bodyBytes));
+        return json['code'] == 1000;
+      }
+      return false;
+    } catch (e) {
+      print('Mark All As Read Error: $e');
+      return false;
+    }
   }
 }

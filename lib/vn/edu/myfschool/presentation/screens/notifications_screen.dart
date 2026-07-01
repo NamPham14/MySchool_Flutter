@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../domain/notification_model.dart';
 import '../../service/notification_service.dart';
+import 'package:provider/provider.dart';
+import '../../controller/notification_provider.dart';
+import 'grades_screen.dart';
+import 'leave_request_screen.dart';
+import 'homework_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -47,6 +52,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           );
         }
       });
+      // Decrement globally
+      if (mounted) {
+        Provider.of<NotificationProvider>(context, listen: false).decrementUnreadCount();
+      }
+    }
+  }
+
+  Future<void> _markAllAsRead() async {
+    final success = await _notificationService.markAllAsRead();
+    if (success) {
+      setState(() {
+        _notifications = _notifications.map((n) => NotificationModel(
+          id: n.id,
+          title: n.title,
+          content: n.content,
+          type: n.type,
+          createdAt: n.createdAt,
+          isRead: true,
+        )).toList();
+      });
+      if (mounted) {
+        Provider.of<NotificationProvider>(context, listen: false).fetchUnreadCount();
+      }
     }
   }
 
@@ -151,10 +179,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.done_all, color: Color(0xFF1464F6)),
-            onPressed: () {
-              // Optionally mark all as read
-              _loadNotifications();
-            },
+            onPressed: _markAllAsRead,
           ),
         ],
       ),
@@ -172,7 +197,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       return GestureDetector(
                         onTap: () {
                           _markAsRead(item);
-                          _showNotificationDetails(item);
+                          if (item.type == 'GRADE') {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const GradesScreen()));
+                          } else if (item.type == 'LEAVE') {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const LeaveRequestScreen()));
+                          } else if (item.type == 'ASSIGNMENT') {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeworkScreen()));
+                          } else {
+                            _showNotificationDetails(item);
+                          }
                         },
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 12),
