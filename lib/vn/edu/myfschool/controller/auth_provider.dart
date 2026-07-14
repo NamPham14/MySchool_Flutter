@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import '../domain/auth_response_model.dart';
 import '../domain/auth_response_model.dart';
 import '../service/auth_service.dart';
+import '../service/api_config.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -38,6 +40,24 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false; // Trả về false để UI hiện popup báo lỗi
     }
+  }
+
+  /// Hàm kiểm tra đăng nhập khi mở App
+  Future<bool> checkAuth() async {
+    final token = await ApiConfig.storage.read(key: 'accessToken');
+    if (token == null || token.isEmpty) {
+      return false;
+    }
+    // Lấy thông tin user hiện tại
+    final profile = await _authService.getMyProfile();
+    if (profile != null) {
+      currentUser = profile;
+      notifyListeners();
+      return true;
+    }
+    // Nếu token hết hạn hoặc lỗi, xóa token
+    await logout();
+    return false;
   }
 
   /// Hàm đăng xuất

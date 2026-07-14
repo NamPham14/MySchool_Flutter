@@ -22,16 +22,37 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Connect WebSocket cho Notifications and fetch initial count
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifProvider = Provider.of<NotificationProvider>(context, listen: false);
       notifProvider.fetchUnreadCount();
-      notifProvider.connectWebSocket(context);
+      notifProvider.connectWebSocket();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    final notifProvider = Provider.of<NotificationProvider>(context, listen: false);
+    if (state == AppLifecycleState.resumed) {
+      // Khi mo lai App, ket noi lai WebSocket va update tin nhan
+      notifProvider.connectWebSocket();
+      notifProvider.fetchUnreadCount();
+    } else if (state == AppLifecycleState.paused) {
+      // Khi an App, ngat ket noi tiet kiem Pin va tai nguyen
+      notifProvider.disconnectWebSocket();
+    }
   }
 
   @override

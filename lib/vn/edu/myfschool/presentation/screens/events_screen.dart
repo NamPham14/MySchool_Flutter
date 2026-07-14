@@ -35,9 +35,11 @@ class _EventsScreenState extends State<EventsScreen> {
   
   final List<Map<String, dynamic>> _categories = [
     {"name": "Tất Cả", "icon": null, "bgColor": Colors.black, "textColor": Colors.white},
+    {"name": "Khai Giảng", "icon": Icons.flag, "bgColor": const Color(0xFFFFE4E1), "textColor": const Color(0xFFE91E63)},
     {"name": "Học Thuật", "icon": Icons.school, "bgColor": const Color(0xFFD0E8FF), "textColor": const Color(0xFF2196F3)},
     {"name": "Thể thao", "icon": Icons.emoji_events, "bgColor": const Color(0xFFD4F5DD), "textColor": const Color(0xFF4CAF50)},
     {"name": "Lễ Hội", "icon": Icons.celebration, "bgColor": const Color(0xFFFFF0D4), "textColor": const Color(0xFFFF9800)},
+    {"name": "Ngoại Khóa", "icon": Icons.nature_people, "bgColor": const Color(0xFFE0F7FA), "textColor": const Color(0xFF00BCD4)},
   ];
 
   @override

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import '../service/api_config.dart';
 import '../service/notification_service.dart';
+import '../core/constants/globals.dart'; // import navigatorKey
 
 class NotificationProvider extends ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
@@ -23,7 +24,7 @@ class NotificationProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> connectWebSocket(BuildContext context) async {
+  Future<void> connectWebSocket() async {
     final token = await ApiConfig.storage.read(key: 'accessToken');
     final strId = await ApiConfig.storage.read(key: 'userId');
     final userId = strId ?? '1'; // Fallback to 1
@@ -47,15 +48,31 @@ class NotificationProvider extends ChangeNotifier {
                 print('Received New Notification: ${frame.body}');
                 _unreadCount++;
                 notifyListeners();
-                
-                // Hien thi SnackBar
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('🔔 Bạn có thông báo mới!'),
-                    backgroundColor: Color(0xFFF27024),
-                    duration: Duration(seconds: 3),
+                // Hien thi SnackBar tu tren xuong giong message
+                final context = navigatorKey.currentContext;
+                if (context != null) {
+                  final screenSize = MediaQuery.of(context).size;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text(
+                      '🔔 Bạn có thông báo mới!', 
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                    ),
+                    backgroundColor: const Color(0xFFF27024),
+                    duration: const Duration(seconds: 3),
+                    behavior: SnackBarBehavior.floating,
+                    margin: EdgeInsets.only(
+                      bottom: screenSize.height - 120, // Day len tren cung
+                      left: 16,
+                      right: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 6,
                   ),
                 );
+                }
               }
             },
           );

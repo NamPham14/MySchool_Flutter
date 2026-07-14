@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../domain/auth_response_model.dart';
 import 'api_config.dart';
@@ -29,6 +29,34 @@ class AuthService {
       }
     } catch (e) {
       print('Login Error: $e');
+    }
+    return null;
+  }
+
+  Future<AuthResponseModel?> getMyProfile() async {
+    try {
+      final token = await ApiConfig.storage.read(key: 'accessToken');
+      if (token == null) return null;
+      
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/users/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final json = jsonDecode(utf8.decode(response.bodyBytes));
+        if (json['code'] == 1000) {
+          // The profile API might return UserProfileResponse, which is similar to AuthResponseModel
+          // Assuming it has the same fields or we map it
+          final data = json['data'];
+          data['token'] = token; // Inject token back so AuthResponseModel doesn't complain
+          return AuthResponseModel.fromJson(data);
+        }
+      }
+    } catch (e) {
+      print('Get Profile Error: $e');
     }
     return null;
   }

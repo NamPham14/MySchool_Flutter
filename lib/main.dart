@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// Import Screens
-import 'vn/edu/myfschool/presentation/screens/login_screen.dart';
+import 'vn/edu/myfschool/presentation/screens/splash_screen.dart';
 
 // Import Providers
 import 'vn/edu/myfschool/controller/auth_provider.dart';
@@ -12,6 +11,7 @@ import 'vn/edu/myfschool/controller/leave_request_provider.dart';
 import 'vn/edu/myfschool/controller/chat_provider.dart';
 import 'vn/edu/myfschool/controller/misc_providers.dart';
 import 'vn/edu/myfschool/controller/notification_provider.dart';
+import 'vn/edu/myfschool/core/constants/globals.dart';
 
 void main() {
   runApp(
@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'F-School App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -46,9 +47,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFF27024)), 
         useMaterial3: true,
       ),
-      // Tạm thời luôn mở trang Đăng nhập đầu tiên. 
-      // (Sau này ta sẽ thêm logic kiểm tra token, nếu có token thì ném thẳng vào HomeScreen)
-      home: const LoginScreen(), 
+      // Sử dụng SplashScreen để kiểm tra trạng thái đăng nhập
+      home: const SplashScreen(), 
     );
   }
 }
