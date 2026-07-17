@@ -4,11 +4,15 @@ import '../domain/timetable_model.dart';
 import 'api_config.dart';
 
 class TimetableService {
-  Future<List<TimetableModel>> getMySchedules() async {
+  Future<List<TimetableModel>> getMySchedules({int? studentId}) async {
     try {
       final headers = await ApiConfig.getHeaders();
+      String url = '${ApiConfig.baseUrl}/schedules/my-schedule';
+      if (studentId != null) {
+        url += '?studentId=$studentId';
+      }
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/schedules/my-schedule'),
+        Uri.parse(url),
         headers: headers,
       );
 

@@ -4,11 +4,15 @@ import '../domain/fee_invoice_model.dart';
 import 'api_config.dart';
 
 class FeeInvoiceService {
-  Future<List<FeeInvoiceModel>> getMyFeeInvoices() async {
+  Future<List<FeeInvoiceModel>> getMyFeeInvoices({int? studentId}) async {
     try {
       final headers = await ApiConfig.getHeaders();
+      String url = '${ApiConfig.baseUrl}/fees/my-invoices';
+      if (studentId != null) {
+        url += '?studentId=$studentId';
+      }
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/fees/my-invoices'),
+        Uri.parse(url),
         headers: headers,
       );
 

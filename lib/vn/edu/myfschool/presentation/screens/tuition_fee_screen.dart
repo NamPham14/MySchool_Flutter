@@ -4,7 +4,8 @@ import '../../controller/misc_providers.dart';
 import '../../domain/fee_invoice_model.dart';
 
 class TuitionFeeScreen extends StatefulWidget {
-  const TuitionFeeScreen({Key? key}) : super(key: key);
+  final int? studentId;
+  const TuitionFeeScreen({super.key, this.studentId});
 
   @override
   State<TuitionFeeScreen> createState() => _TuitionFeeScreenState();
@@ -15,7 +16,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<FeeInvoiceProvider>().fetchInvoices();
+      context.read<FeeInvoiceProvider>().fetchInvoices(studentId: widget.studentId);
     });
   }
 
@@ -58,7 +59,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                   : RefreshIndicator(
                       color: const Color(0xFFFF7A3D),
                       onRefresh: () async {
-                        await context.read<FeeInvoiceProvider>().fetchInvoices();
+                        await context.read<FeeInvoiceProvider>().fetchInvoices(studentId: widget.studentId);
                       },
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),

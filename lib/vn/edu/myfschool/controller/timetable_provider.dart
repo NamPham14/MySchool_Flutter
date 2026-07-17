@@ -10,7 +10,7 @@ class TimetableProvider extends ChangeNotifier {
   String? errorMessage;
 
   /// Lấy danh sách thời khóa biểu của cá nhân
-  Future<void> fetchTimetables() async {
+  Future<void> fetchTimetables({int? studentId}) async {
     // Nếu đang có data cũ, ta bật loading lên để tải data mới
     isLoading = true;
     errorMessage = null;
@@ -18,7 +18,7 @@ class TimetableProvider extends ChangeNotifier {
 
     try {
       // Gọi service để chọc xuống Backend
-      final data = await _service.getMySchedules();
+      final data = await _service.getMySchedules(studentId: studentId);
       timetables = data;
     } catch (e) {
       errorMessage = "Không thể tải thời khóa biểu: $e";

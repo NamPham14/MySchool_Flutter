@@ -48,11 +48,11 @@ class FeeInvoiceProvider extends ChangeNotifier {
   bool isLoading = false;
   List<FeeInvoiceModel> invoices = [];
 
-  Future<void> fetchInvoices() async {
+  Future<void> fetchInvoices({int? studentId}) async {
     isLoading = true;
     notifyListeners();
 
-    invoices = await _service.getMyFeeInvoices();
+    invoices = await _service.getMyFeeInvoices(studentId: studentId);
     
     isLoading = false;
     notifyListeners();

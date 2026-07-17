@@ -13,19 +13,24 @@ import 'notifications_screen.dart';
 import '../../controller/notification_provider.dart';
 import '../../domain/user_model.dart';
 import '../../service/parent_service.dart';
+import '../../domain/event_model.dart';
+import '../../service/event_service.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class HomeScreenV2 extends StatefulWidget {
+  const HomeScreenV2({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreenV2> createState() => _HomeScreenV2State();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+class _HomeScreenV2State extends State<HomeScreenV2> with WidgetsBindingObserver {
   bool _isParent = false;
   List<UserModel> _children = [];
   UserModel? _selectedChild;
   bool _isLoadingChildren = false;
+
+  EventModel? _upcomingEvent;
+  bool _isLoadingEvent = true;
 
   @override
   void initState() {
@@ -44,7 +49,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
         _fetchChildren();
       }
+      _fetchUpcomingEvent();
     });
+  }
+
+  Future<void> _fetchUpcomingEvent() async {
+    try {
+      final events = await EventService().getEvents('UPCOMING');
+      if (mounted) {
+        setState(() {
+          if (events.isNotEmpty) {
+            events.sort((a, b) {
+              if (a.startDatetime == null) return 1;
+              if (b.startDatetime == null) return -1;
+              return DateTime.parse(a.startDatetime!).compareTo(DateTime.parse(b.startDatetime!));
+            });
+            _upcomingEvent = events.first;
+          }
+          _isLoadingEvent = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingEvent = false);
+    }
   }
 
   Future<void> _fetchChildren() async {
@@ -111,6 +138,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   const SizedBox(height: 24),
                   // 3. Profile Card
                   _buildProfileCard(),
+                  
+                  const SizedBox(height: 24),
+                  // 3.5. Smart Dashboard
+                  _buildSmartDashboard(context),
                   
                   const SizedBox(height: 24),
                   // 4. Functions Board
@@ -233,6 +264,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         
         String rollNumber = "Chưa có MSSV";
         String campus = "Chưa có Campus";
+        String className = "Chưa có Lớp";
         
         if (_isParent) {
           if (_selectedChild?.rollNumber != null && _selectedChild!.rollNumber!.isNotEmpty) {
@@ -241,9 +273,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           if (_selectedChild?.campus != null && _selectedChild!.campus!.isNotEmpty) {
             campus = _selectedChild!.campus!;
           }
+          if (_selectedChild?.className != null && _selectedChild!.className!.isNotEmpty) {
+            className = _selectedChild!.className!;
+          }
         } else {
-          if (user?.rollNumber != null && user!.rollNumber.isNotEmpty) rollNumber = user.rollNumber;
-          if (user?.campus != null && user!.campus.isNotEmpty) campus = user.campus;
+          if (user != null && user.rollNumber.isNotEmpty) rollNumber = user.rollNumber;
+          if (user != null && user.campus.isNotEmpty) campus = user.campus;
+          if (user != null && user.className.isNotEmpty) className = user.className;
         }
 
         return Container(
@@ -329,24 +365,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ],
               ),
               const Divider(color: Colors.white30, height: 24),
-              // Hàng dưới: Lớp & Trường
+              // Hàng dưới: MSSV & Trường
               Row(
                 children: [
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.person_pin, color: Colors.white, size: 18),
-                        const SizedBox(width: 8),
-                        Text(rollNumber.isNotEmpty ? rollNumber : "Chưa cập nhật", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        const Icon(Icons.person_pin, color: Colors.white, size: 16),
+                        const SizedBox(width: 6),
+                        Text(rollNumber.isNotEmpty ? rollNumber : "Chưa cập nhật", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                       ],
                     ),
                   ),
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.school, color: Colors.white, size: 18),
-                        const SizedBox(width: 8),
-                        Text(campus.isNotEmpty ? campus : "Chưa cập nhật", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        const Icon(Icons.class_, color: Colors.white, size: 16),
+                        const SizedBox(width: 6),
+                        Text(className.isNotEmpty ? className : "Chưa cập nhật", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -356,6 +392,135 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
         );
       },
+    );
+  }
+
+  // --- 3.5 Smart Dashboard ---
+  Widget _buildSmartDashboard(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Tổng quan",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF7A3D), Color(0xFFFF9A5A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF7A3D).withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
+          child: _isLoadingEvent
+              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+              : _upcomingEvent == null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.event, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "Sự kiện sắp diễn ra",
+                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Chưa có sự kiện nào sắp tới",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.event, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "Sự kiện sắp diễn ra",
+                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _upcomingEvent!.title,
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _upcomingEvent!.startDatetime != null
+                              ? "Thời gian: ${_formatDateTime(_upcomingEvent!.startDatetime!)}"
+                              : "Sắp diễn ra",
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                      ],
+                    ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDateTime(String dt) {
+    try {
+      final date = DateTime.parse(dt);
+      return "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
+    } catch (e) {
+      return dt;
+    }
+  }
+
+  Widget _buildDashboardCard(String title, String value, IconData icon, Color color1, Color color2) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color1, color2],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color1.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 

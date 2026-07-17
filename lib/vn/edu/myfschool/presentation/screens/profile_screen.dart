@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../controller/auth_provider.dart';
@@ -104,11 +104,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.currentUser;
     
-    final fullName = user?.fullName ?? "Tài khoản Sinh viên";
+    final isParent = user?.roles.contains('PARENT') ?? false;
+
+    final fullName = user?.fullName ?? (isParent ? "Phụ huynh" : "Tài khoản Sinh viên");
     final phone = user?.phoneNumber ?? "Chưa rõ SĐT";
     final avatar = user?.avatarUrl ?? "";
-    final rollNumber = (user?.rollNumber != null && user!.rollNumber.isNotEmpty) ? user.rollNumber : "Chưa có MSSV";
-    final campus = (user?.campus != null && user!.campus.isNotEmpty) ? user.campus : "Chưa có Campus";
+    final rollNumber = (user?.rollNumber != null && user!.rollNumber.isNotEmpty) 
+        ? user.rollNumber 
+        : (isParent ? "Tài khoản Phụ huynh" : "Chưa có MSSV");
+    final campus = (user?.campus != null && user!.campus.isNotEmpty) 
+        ? user.campus 
+        : (isParent ? "FPT" : "Chưa có Campus");
+    final className = (user?.className != null && user!.className.isNotEmpty) 
+        ? user.className 
+        : (isParent ? "Không áp dụng" : "Chưa có Lớp");
     final email = (user?.email != null && user!.email.isNotEmpty) ? user.email : "Chưa có Email";
 
     return Scaffold(
@@ -250,7 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 32),
 
                   // Card 1 - "Thông tin học sinh"
-                  _buildStudentInfoCard(phone, email, campus),
+                  _buildStudentInfoCard(phone, email, campus, className),
 
                   // Card 2 - "Giao diện"
                   _buildThemeCard(),
@@ -274,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Khối xây dựng Card 1
-  Widget _buildStudentInfoCard(String phone, String email, String campus) {
+  Widget _buildStudentInfoCard(String phone, String email, String campus, String className) {
     return _buildCardWrapper(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,6 +335,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             iconColor: const Color(0xFF4CAF50),
             label: 'Campus',
             value: campus.isNotEmpty ? campus : 'Chưa cập nhật',
+            isBoldValue: true,
+          ),
+          const SizedBox(height: 12),
+
+          // Dòng Lớp học
+          _buildInfoRow(
+            icon: Icons.class_outlined,
+            iconBgColor: const Color(0xFFE8D0FF), // Tím nhạt
+            iconColor: const Color(0xFF9C27B0),
+            label: 'Lớp học',
+            value: className.isNotEmpty ? className : 'Chưa cập nhật',
             isBoldValue: true,
           ),
         ],

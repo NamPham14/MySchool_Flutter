@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controller/auth_provider.dart';
-import 'home_screen.dart';
+import 'home_screen_v2.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -336,7 +336,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       // Đăng nhập thành công -> Xóa màn Login, đẩy vào Home
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        MaterialPageRoute(builder: (context) => const HomeScreenV2()),
                       );
                     } else if (context.mounted) {
                       // Đăng nhập thất bại -> Hiện thông báo đỏ

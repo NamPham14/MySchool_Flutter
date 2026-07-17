@@ -9,6 +9,7 @@ class AuthResponseModel {
   final String email;
   final String rollNumber;
   final String campus;
+  final String className;
   final List<String> roles;
 
   AuthResponseModel({
@@ -22,6 +23,7 @@ class AuthResponseModel {
     required this.email,
     required this.rollNumber,
     required this.campus,
+    required this.className,
     required this.roles,
   });
 
@@ -37,6 +39,7 @@ class AuthResponseModel {
       email: json['email'] ?? '',
       rollNumber: json['rollNumber'] ?? '',
       campus: json['campus'] ?? '',
+      className: json['className'] ?? '',
       roles: List<String>.from(json['roles'] ?? []),
     );
   }

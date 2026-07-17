@@ -20,7 +20,8 @@ void main() {
 }
 
 class ScheduleScreen extends StatefulWidget {
-  const ScheduleScreen({Key? key}) : super(key: key);
+  final int? studentId;
+  const ScheduleScreen({super.key, this.studentId});
 
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
@@ -50,7 +51,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     _initWeekData();
     
     // Sau đó gọi API tải thời khóa biểu
-    context.read<TimetableProvider>().fetchTimetables();
+    context.read<TimetableProvider>().fetchTimetables(studentId: widget.studentId);
   }
 
   void _initWeekData() {

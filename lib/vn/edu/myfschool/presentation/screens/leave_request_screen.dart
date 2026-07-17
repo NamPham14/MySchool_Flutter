@@ -4,7 +4,8 @@ import '../../controller/auth_provider.dart';
 import '../../controller/leave_request_provider.dart';
 
 class LeaveRequestScreen extends StatefulWidget {
-  const LeaveRequestScreen({Key? key}) : super(key: key);
+  final int? studentId;
+  const LeaveRequestScreen({super.key, this.studentId});
 
   @override
   State<LeaveRequestScreen> createState() => _LeaveRequestScreenState();
@@ -22,7 +23,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LeaveRequestProvider>().fetchLeaveRequests();
+      context.read<LeaveRequestProvider>().fetchLeaveRequests(studentId: widget.studentId);
     });
   }
 
@@ -412,7 +413,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 String title = _selectedTitle ?? 'Xin nghỉ';
                 String reason = "$title: ${_reasonController.text.trim()}";
                 
-                bool success = await context.read<LeaveRequestProvider>().createRequest(start, end, reason);
+                bool success = await context.read<LeaveRequestProvider>().createRequest(start, end, reason, studentId: widget.studentId);
                 
                 if (!context.mounted) return;
                 

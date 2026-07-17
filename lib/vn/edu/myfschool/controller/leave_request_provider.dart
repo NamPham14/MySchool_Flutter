@@ -10,14 +10,14 @@ class LeaveRequestProvider extends ChangeNotifier {
   String? errorMessage;
 
   /// Lấy danh sách đơn từ đã nộp
-  Future<void> fetchLeaveRequests() async {
+  Future<void> fetchLeaveRequests({int? studentId}) async {
     isLoading = true;
     errorMessage = null;
     // Bỏ comment dòng notifyListeners nếu muốn UI show loading circle mỗi lần gọi lại
     // notifyListeners(); 
 
     try {
-      final data = await _service.getMyLeaveRequests();
+      final data = await _service.getMyLeaveRequests(studentId: studentId);
       requests = data;
     } catch (e) {
       errorMessage = "Lỗi tải danh sách đơn: $e";
@@ -28,16 +28,16 @@ class LeaveRequestProvider extends ChangeNotifier {
   }
 
   /// Nộp đơn xin nghỉ phép mới
-  Future<bool> createRequest(String startDate, String endDate, String reason) async {
+  Future<bool> createRequest(String startDate, String endDate, String reason, {int? studentId}) async {
     isLoading = true;
     notifyListeners();
 
     // Gọi API lưu đơn mới
-    bool isSuccess = await _service.createLeaveRequest(startDate, endDate, reason);
+    bool isSuccess = await _service.createLeaveRequest(startDate, endDate, reason, studentId: studentId);
     
     if (isSuccess) {
       // Nếu thêm thành công trên server, ta tự động gọi lại hàm fetch để load lại list mới nhất
-      await fetchLeaveRequests();
+      await fetchLeaveRequests(studentId: studentId);
     } else {
       isLoading = false;
       notifyListeners();

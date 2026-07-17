@@ -20,7 +20,8 @@ void main() {
 }
 
 class GradesScreen extends StatefulWidget {
-  const GradesScreen({Key? key}) : super(key: key);
+  final int? studentId;
+  const GradesScreen({super.key, this.studentId});
 
   @override
   State<GradesScreen> createState() => _GradesScreenState();
@@ -52,7 +53,7 @@ class _GradesScreenState extends State<GradesScreen> {
 
   void _fetchData() {
     final user = context.read<AuthProvider>().currentUser;
-    int studentId = user?.id ?? 1;
+    int studentId = widget.studentId ?? (user?.id ?? 1);
     context.read<GradeProvider>().fetchGrades(studentId, _selectedSemesterId);
   }
 
