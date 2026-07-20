@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controller/misc_providers.dart';
+import '../../controller/auth_provider.dart';
 import '../../domain/fee_invoice_model.dart';
 
 class TuitionFeeScreen extends StatefulWidget {
@@ -67,7 +68,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 16),
-                            _buildSummaryCard(totalUnpaid),
+                            _buildSummaryCard(totalUnpaid, context),
                             const SizedBox(height: 24),
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 16),
@@ -111,7 +112,10 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     );
   }
 
-  Widget _buildSummaryCard(double totalUnpaid) {
+  Widget _buildSummaryCard(double totalUnpaid, BuildContext context) {
+    final authProvider = context.read<AuthProvider>();
+    final isParent = authProvider.currentUser?.roles.contains('ROLE_PARENT') ?? false;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
@@ -147,18 +151,21 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: totalUnpaid > 0 ? () {
+                  onPressed: (isParent && totalUnpaid > 0) ? () {
                     // Xử lý thanh toán tại đây
                   } : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFFFF7A3D),
                     disabledBackgroundColor: Colors.white.withOpacity(0.5),
-                    disabledForegroundColor: Colors.grey,
+                    disabledForegroundColor: isParent ? Colors.grey : const Color(0xFFFF7A3D).withOpacity(0.8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: Text(totalUnpaid > 0 ? "Thanh toán ngay" : "Đã hoàn thành", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    totalUnpaid == 0 ? "Đã hoàn thành" : (isParent ? "Thanh toán ngay" : "Vui lòng nhờ Phụ huynh thanh toán"), 
+                    style: const TextStyle(fontWeight: FontWeight.bold)
+                  ),
                 ),
               ),
             ],

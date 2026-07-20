@@ -78,6 +78,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     final user = context.watch<AuthProvider>().currentUser;
     final fullName = user?.fullName ?? "Tài khoản Sinh viên";
     final rollNumber = (user?.rollNumber != null && user!.rollNumber.isNotEmpty) ? user.rollNumber : "Chưa có MSSV";
+    final isParent = user?.roles.contains('ROLE_PARENT') ?? false;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F3F0), // Màu be nhạt
@@ -96,22 +97,25 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                     // Header nhỏ dạng Card gradient
                     _buildProfileHeader(fullName, rollNumber),
                     
-                    const SizedBox(height: 16),
-                    // Tiêu đề Gửi đơn
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        'Gửi đơn nghỉ học',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D2D2D),
+
+                    if (isParent) ...[
+                      const SizedBox(height: 16),
+                      // Tiêu đề Gửi đơn
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          'Gửi đơn nghỉ học',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2D2D2D),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Form nhập đơn
-                    _buildFormCard(),
+                      const SizedBox(height: 12),
+                      // Form nhập đơn
+                      _buildFormCard(),
+                    ],
                     
                     const SizedBox(height: 20),
                     // Tiêu đề Lịch sử đơn

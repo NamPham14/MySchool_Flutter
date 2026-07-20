@@ -10,6 +10,7 @@ import 'homework_screen.dart';
 import 'tuition_fee_screen.dart';
 import 'announcements_screen.dart';
 import 'notifications_screen.dart';
+import 'clubs_screen.dart';
 import '../../controller/notification_provider.dart';
 import '../../domain/user_model.dart';
 import '../../service/parent_service.dart';
@@ -535,7 +536,7 @@ class _HomeScreenV2State extends State<HomeScreenV2> with WidgetsBindingObserver
       {'title': 'Lịch Học', 'icon': Icons.calendar_month, 'color': const Color(0xFFFEFAC0), 'screen': ScheduleScreen(studentId: sId)},
       {'title': 'Học Phí', 'icon': Icons.payments, 'color': const Color(0xFFFAD2E0), 'screen': TuitionFeeScreen(studentId: sId)},
       {'title': 'Sự Kiện', 'icon': Icons.event, 'color': const Color(0xFFD4E3FC), 'screen': const EventsScreen()},
-      {'title': 'Câu Lạc Bộ', 'icon': Icons.groups, 'color': const Color(0xFFFFE3AE), 'screen': null},
+      {'title': 'Câu Lạc Bộ', 'icon': Icons.groups, 'color': const Color(0xFFFFE3AE), 'screen': const ClubsScreen()},
     ];
 
     return Container(

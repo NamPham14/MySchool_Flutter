@@ -421,7 +421,7 @@ class _GradesScreenState extends State<GradesScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Giữa kỳ: ${sub.midtermScore ?? 'N/A'} - Cuối kỳ: ${sub.finalScore ?? 'N/A'}",
+                      "TX1: ${sub.regularScore1 ?? '-'} | TX2: ${sub.regularScore2 ?? '-'}\nGK: ${sub.midtermScore ?? '-'} | CK: ${sub.finalScore ?? '-'}",
                       style: const TextStyle(color: Color(0xFF9E9E9E), fontSize: 11),
                     ),
                   ],

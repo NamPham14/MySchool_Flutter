@@ -11,6 +11,7 @@ import 'vn/edu/myfschool/controller/leave_request_provider.dart';
 import 'vn/edu/myfschool/controller/chat_provider.dart';
 import 'vn/edu/myfschool/controller/misc_providers.dart';
 import 'vn/edu/myfschool/controller/notification_provider.dart';
+import 'vn/edu/myfschool/controller/club_provider.dart';
 import 'vn/edu/myfschool/core/constants/globals.dart';
 
 void main() {
@@ -27,6 +28,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => AssignmentProvider()),
         ChangeNotifierProvider(create: (_) => FeeInvoiceProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => ClubProvider()),
       ],
       child: const MyApp(),
     ),
